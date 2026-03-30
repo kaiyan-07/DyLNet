@@ -1,0 +1,173 @@
+{% extends "layout.html" %}
+
+{% block title %}Analyse spéciale des liaisons{% endblock %}
+
+{% block pageTitle %}Analyse spéciale des liaisons{% endblock %}
+
+{% block pageSubtitle %}
+Cette page permet d'extraire toutes les liaisons facultatives de fichiers _VD_LEX.eaf, de les afficher sous forme d'un concordancier, et d'extraire ces liaisons sous la forme d'un fichier.csv
+{% endblock %}
+
+{% block content %}
+      <form action="/runanalyseliai" method="post" enctype="multipart/form-data">
+          <input type="file" name="a_liai_file" size="50" multiple required/>
+          <br>
+          <input class="mt-2 btn btn-primary" type="submit" value="Lancer analyse des fichiers" />
+      </form>
+
+      <hr/>
+
+      {% if dictio %}
+        <form action="/runaffichageliai" method="post">
+          <label for="mot1">Mot 1</label>
+          <select name="mot1" id="mot1">
+            <option value="pas_mot1" {% if mot1choisi=="" %}selected{% endif %}> --------- </option>
+            {% for mot1 in mots1 %}
+              <option value="{{ mot1 }}" {% if mot1choisi==mot1 %}selected{% endif %}>{{ mot1 }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="mot2">Mot 2</label>
+          <select name="mot2" id="mot2">
+            <option value="pas_mot2" {% if mot2choisi=="" %}selected{% endif %}> --------- </option>
+            {% for mot2 in mots2 %}
+              <option value="{{ mot2 }}" {% if mot2choisi==mot2 %}selected{% endif %}>{{ mot2 }}</option>
+            {% endfor %}
+          </select>
+          <br>
+          <!-- Options pour filtrer le type de liaison facultative -->
+          <input type="radio" name="lf_type" value="tout" id="tout" {% if lf_type_choisi=="tout" %}checked{% endif %}>
+          <label for="tout">Pas de filtration</label><br/>
+          <input type="radio" name="lf_type" value="[LF1]" id="lf1" {% if lf_type_choisi=="[LF1]" %}checked{% endif %}>
+          <label for="lf1">LF1 seulement</label><br/>
+          <input type="radio" name="lf_type" value="[LF3]" id="lf3" {% if lf_type_choisi=="[LF3]" %}checked{% endif %}>
+          <label for="lf3">LF3 seulement</label><br/>
+          <input class="mt-2 btn btn-primary" type="submit" value="Lancer affichage concordancier"/>
+        </form>
+        <br>
+        <!-- Informations sur les mots sélectionnés -->
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <p style="margin: 0;">Extraction avec ce(s) mot(s):</p>
+            {% if mot1choisi != "" %}
+              <span>Mot 1: {{ mot1choisi }}</span>
+            {% endif %}
+            {% if mot2choisi != "" %}
+              <span>Mot 2: {{ mot2choisi }}</span>
+            {% endif %}
+          </div>
+          <div style="margin-top: 3px;">
+            {% if lf_type_choisi == "tout" %}
+              Extraction : Pas de filtration
+            {% elif lf_type_choisi == "[LF1]" %}
+              Extraction : LF1 seulement
+            {% elif lf_type_choisi == "[LF3]" %}
+              Extraction : LF3 seulement
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Tableau 1 : Affichage des liaisons -->
+        {% if dictio_filtre_fichier is defined %}
+          <div class="liaison-table-container">
+            <table class="liaison-table">
+              <thead>
+                <tr>
+                  <th>Fichier concerné</th>
+                  <th class="liaison-type">Type de liaison</th>
+                  <th class="contexte-gauche">Contexte gauche</th>
+                  <th class="liaison-text">Liaison</th>
+                  <th class="contexte-droite">Contexte droite</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for key, value in dictio_filtre_fichier.items() %}
+                  <tr>
+                    <td>{{ value[2] }}</td>
+                    <td class="liaison-type">{{ value[4] }}</td>
+                    <td class="contexte-gauche">{{ value[3] }}</td>
+                    <td class="liaison-text">{{ key[0] }} {{ key[1] }}</td>
+                    <td class="contexte-droite">{{ value[5] }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+
+        <div style="margin-top: 15px; margin-bottom: 10px;">
+          <span>Fréquence d’occurrences des mot 1, mot 2, mot 1 + mot 2 :</span>
+          <span style="margin-left: 10px;">
+            {% if lf_type_choisi == "tout" %}
+              Pas de filtration
+            {% elif lf_type_choisi == "[LF1]" %}
+              LF1 seulement
+            {% elif lf_type_choisi == "[LF3]" %}
+              LF3 seulement
+            {% endif %}
+          </span>
+        </div>
+
+        <!-- Tableau 2 : Statistiques des fréquences des liaisons -->
+        {% if mot1_stats and mot2_stats and mot1_mot2_stats %}
+          <div class="stats-table-container">
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Mot 1</th>
+                  <th>Fréquence</th>
+                  <th>Pourcentage</th>
+                  <th>Mot 2</th>
+                  <th>Fréquence</th>
+                  <th>Pourcentage</th>
+                  <th>Mot 1</th>
+                  <th>Mot 2</th>
+                  <th>Fréquence</th>
+                  <th>Pourcentage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for i in range([mot1_stats|length, mot2_stats|length, mot1_mot2_stats|length]|max) %}
+                <tr>
+                  {% if i < mot1_stats|length %}
+                    <td class="mot-col">{{ mot1_stats[i][0] }}</td>
+                    <td class="freq-col">{{ mot1_stats[i][1] }}</td>
+                    <td class="percent-col">{{ mot1_stats[i][2] }}</td>
+                  {% else %}
+                    <td></td><td></td><td></td>
+                  {% endif %}
+
+                  {% if i < mot2_stats|length %}
+                    <td class="mot-col">{{ mot2_stats[i][0] }}</td>
+                    <td class="freq-col">{{ mot2_stats[i][1] }}</td>
+                    <td class="percent-col">{{ mot2_stats[i][2] }}</td>
+                  {% else %}
+                    <td></td><td></td><td></td>
+                  {% endif %}
+
+                  {% if i < mot1_mot2_stats|length %}
+                    {% set mot1, mot2 = mot1_mot2_stats[i][0].split(' ') %}
+                    <td class="mot1-mot2-col">{{ mot1 }}</td>
+                    <td class="mot1-mot2-col">{{ mot2 }}</td>
+                    <td class="freq-col">{{ mot1_mot2_stats[i][1] }}</td>
+                    <td class="percent-col">{{ mot1_mot2_stats[i][2] }}</td>
+                  {% else %}
+                    <td></td><td></td><td></td><td></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+        <br>
+        <!-- Bouton pour télécharger les statistiques sous forme d'un fichier ZIP -->
+        <form action="/generate_stats_zip" method="post">
+            <input class="mt-2 btn btn-primary" type="submit" value="Télécharger les statistiques"/>
+        </form>
+        <br>
+        {% endif %}
+      <form action="/effacerliai" method="post">
+          <input class="mt-2 btn btn-danger" type="submit" value="Supprimer les fichiers analysés" />
+      </form>
+{% endblock %}
