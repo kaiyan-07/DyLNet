@@ -1,0 +1,76 @@
+<!doctype html>
+	<html lang="fr">
+		<head>
+			<meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+			<title>{% block title %}{% endblock %} - DyLNet</title>
+			<link rel="stylesheet" href="{{ url_for('static', filename='css/style1.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+			<link rel="shortcut icon" type="image/jpg" href="{{ url_for('static', filename='icon_dylnet.gif') }}">
+
+		</head>
+		<body>
+      <nav class="navbar navbar-expand-xl navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/">
+            <img src="{{url_for('static', filename='logo_dylnet.gif')}}" height="40px" alt="logo du projet">
+            Dylnet
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="/enrichissement">Enrichissement fichiers</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/negations">Négations</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/analysebrut">Analyse brute</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/analyseorg">Analyse organisée</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/liaisons">Liaisons</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/analyseliai">Affichage des liaisons</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/telechargements">Téléchargement</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <div class="container-fluid">
+	      <h1>
+	        {% block pageTitle %}{% endblock %}
+	      </h1>
+
+	      {% block pageSubtitleContainer %}
+	      <div class="alert alert-primary page-subtitle" role="alert">
+	        {% block pageSubtitle %}{% endblock %}
+	      </div>
+	      {% endblock %}
+
+	      {% block flashmessage %}
+	        <!-- Pour afficher messages flashés -->
+	        {% with messages = get_flashed_messages() %}
+	            {% if messages %}
+	                {% for message in messages %}
+	                        <p style="color: red;">{{ message }}</p>
+	                {% endfor %}
+	            {% endif %}
+	        {% endwith %}
+	      {% endblock %}
+
+	      {% block content %}
+	      {% endblock %}
+      </div>
+      <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+		</body>
+	</html>

@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block pageTitle %}Dylnet{% endblock %}
+
+{% block pageSubtitleContainer %}{% endblock %}
+
+{% block content %}
+	<div class="text-center">
+		<h2>Bienvenue dans l'outil d'analyse de fichiers .eaf pour le projet </h2>
+		<img src="{{url_for('static', filename='logo_dylnet.gif')}}" alt="logo du projet">
+	</div>
+{% endblock %}
